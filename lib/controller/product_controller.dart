@@ -15,15 +15,13 @@ class ProductController extends GetxController {
 
   @override
   void onInit() {
-    retrieveData();
+    _retrieveData();
     super.onInit();
   }
 
-  Future<void> retrieveData() async {
+  Future<void> _retrieveData() async {
     try {
       _isLoading.value = true;
-      _isError.value = false;
-
       final data = await _productService.fetchProducts();
       _products.assignAll(data);
     } catch (e) {

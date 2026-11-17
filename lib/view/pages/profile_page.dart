@@ -28,7 +28,7 @@ class ProfilePage extends StatelessWidget {
             const SizedBox(height: 16),
             Obx(
               () => Text(
-                authController.username.value ?? '',
+                authController.username,
                 style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
             ),
@@ -43,15 +43,15 @@ class ProfilePage extends StatelessWidget {
               onPressed: () {
                 NotificationService().showInstantNotification(
                   title: 'shifaaaashop.54',
-                  body: 'Halo ${authController.username.value}!',
+                  body: 'Halo ${authController.username}!',
                 );
               },
             ),
             const Divider(height: 32),
-                        const Align(
+            const Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'Kesan:\nBelajar Flutter dengan GetX dan Hive ternyata menyenangkan.\n\nPesan:\nSemoga responsi lancar.',
+                'Kesan:\nBelajar mobile ternyata menyenangkan.\n\nPesan:\nSemoga responsi lancar.',
               ),
             ),
             const Spacer(),

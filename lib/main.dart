@@ -1,39 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'controller/auth_controller.dart';
+import 'controller/cart_controller.dart';
+import 'model/cart_item.dart';
 import 'routes/app_pages.dart';
 import 'routes/app_routes.dart';
-import 'service/cart_service.dart';
 import 'service/notification_service.dart';
-import 'service/session_service.dart';
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-  await Hive.openBox(CartService.boxName);
+  Hive.registerAdapter(CartItemAdapter());
+  await Hive.openBox<CartItem>('cart');
   await NotificationService().init();
+  Get.put(AuthController());
+  Get.put(CartController(), permanent: true);
 
-  final username = await SessionService.getUsername();
-
-  runApp(MyApp(username: username));
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key, required this.username});
-
-  final String? username;
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Toko Online',
+      title: 'shifaaaashop.54',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-      ),
-      initialBinding: AppBinding(username),
-      initialRoute: username == null ? AppRoutes.login : AppRoutes.main,
+      initialRoute: AppRoutes.login,
       getPages: AppPages.routes,
     );
   }

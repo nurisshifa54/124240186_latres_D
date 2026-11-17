@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../controller/auth_controller.dart';
 import '../../controller/product_controller.dart';
 import '../../routes/app_routes.dart';
+import '../widgets/product_card.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({super.key});
@@ -16,7 +17,7 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
-        title: const Text('Toko Online'),
+        title: const Text('shifaaaashop.54'),
         actions: [
           IconButton(
             icon: const Icon(Icons.shopping_cart),
@@ -32,51 +33,44 @@ class HomePage extends StatelessWidget {
             color: Colors.teal.shade50,
             child: Obx(
               () => Text(
-                'Selamat datang, ${authController.username.value ?? ''}',
+                'Selamat datang, ${authController.username}',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.all(16),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Rekomendasi Produk',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
           Expanded(
-            child: Obx(() {
-              if (controller.isLoading) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (controller.isError) {
-                return Center(
-                  child: ElevatedButton(
-                    onPressed: controller.retrieveData,
-                    child: const Text('Gagal memuat, coba lagi'),
-                  ),
-                );
-              }
-              return ListView.builder(
-                itemCount: controller.products.length,
-                itemBuilder: (context, index) {
-                  final product = controller.products[index];
-                  return ListTile(
-                    leading: Image.network(product.thumbnail, width: 56),
-                    title: Text(product.title),
-                    subtitle: Text(
-                      '\$${product.price}',
-                      style: const TextStyle(color: Colors.teal),
-                    ),
-                    trailing: const Icon(Icons.chevron_right, color: Colors.pink),
-                    onTap: () => Get.toNamed(AppRoutes.detail, arguments: product),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Obx(() {
+                if (controller.isLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: Colors.pink),
                   );
-                },
-              );
-            }),
+                }
+                if (controller.isError) {
+                  return const Center(child: Text('Gagal memuat produk'));
+                }
+                return GridView.builder(
+                  itemCount: controller.products.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                  ),
+                  itemBuilder: (context, index) {
+                    return ProductCard(
+                      product: controller.products[index],
+                      onTap: () {
+                        Get.toNamed(
+                          AppRoutes.detail,
+                          arguments: controller.products[index],
+                        );
+                      },
+                    );
+                  },
+                );
+              }),
+            ),
           ),
         ],
       ),

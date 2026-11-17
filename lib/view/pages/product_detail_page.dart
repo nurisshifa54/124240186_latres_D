@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../controller/auth_controller.dart';
 import '../../controller/cart_controller.dart';
 import '../../model/product.dart';
 
 class ProductDetailPage extends StatelessWidget {
   ProductDetailPage({super.key});
 
-  final Product product = Get.arguments as Product;
+  final AuthController authController = Get.find<AuthController>();
   final CartController cartController = Get.find<CartController>();
-  final RxInt qty = 1.obs;
+  final RxInt _qty = 1.obs;
 
-  Future<void> addToCart() async {
-    final jumlah = qty.value;
-    await cartController.addItem(product, jumlah);
+  void _addToCart(Product product) {
+    final jumlah = _qty.value;
+    cartController.addToCart(authController.username, product, jumlah);
     Get.back();
     Get.snackbar(
       '',
@@ -21,84 +22,145 @@ class ProductDetailPage extends StatelessWidget {
       backgroundColor: Colors.teal,
       colorText: Colors.white,
       snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final product = Get.arguments as Product;
+
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         title: const Text('Detail Produk'),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(child: Image.network(product.thumbnail, height: 200)),
-            const SizedBox(height: 16),
-            Text(
-              product.title,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '\$${product.price}',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.teal,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.25,
+                width: double.infinity,
+                child: Center(
+                  child: product.images.length > 1
+                      ? ListView.separated(
+                          itemCount: product.images.length,
+                          scrollDirection: Axis.horizontal,
+                          itemBuilder: (context, index) {
+                            return Card(
+                              elevation: 3,
+                              color: Colors.white,
+                              child: Image.network(product.images[index]),
+                            );
+                          },
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(width: 10),
+                        )
+                      : Card(
+                          elevation: 3,
+                          color: Colors.white,
+                          child: Image.network(
+                            product.images[0],
+                            width: double.infinity,
+                          ),
+                        ),
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text('Brand: ${product.brand}'),
-            Text('Kategori: ${product.category}'),
-            Text('Rating: ${product.rating}'),
-            Text('Sisa Stok: ${product.stock}'),
-            const Divider(height: 32),
-            const Text(
-              'Deskripsi Produk',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(product.description),
-            const SizedBox(height: 24),
-            Obx(
-              () => Row(
+              const SizedBox(height: 20),
+              Text(
+                product.title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.remove_circle),
-                    color: Colors.teal,
-                    onPressed: qty.value > 1 ? () => qty.value-- : null,
+                  Text(
+                    '\$${product.price}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.teal,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  Text('${qty.value}', style: const TextStyle(fontSize: 20)),
-                  IconButton(
-                    icon: const Icon(Icons.add_circle),
-                    color: Colors.teal,
-                    onPressed:
-                        qty.value < product.stock ? () => qty.value++ : null,
-                  ),
+                  Text('Rating: ${product.rating}'),
                 ],
               ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.shopping_cart),
-                label: const Text('Tambah ke Cart'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+              Text('Brand: ${product.brand}'),
+              Text('Kategori: ${product.category}'),
+              Text('Sisa Stok: ${product.stock}'),
+              const SizedBox(height: 10),
+              Text(product.description, textAlign: TextAlign.justify),
+              const SizedBox(height: 10),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  spacing: 8,
+                  children: product.tags
+                      .map((tag) => Chip(label: Text(tag)))
+                      .toList(),
                 ),
-                onPressed: product.stock < 1 ? null : addToCart,
               ),
-            ),
-          ],
+              const SizedBox(height: 20),
+              const Text(
+                'Reviews',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 19),
+              ),
+              Column(
+                children: product.reviews.map((review) {
+                  return ListTile(
+                    leading: CircleAvatar(
+                      child: Text(
+                        review['reviewerName'].toString().substring(0, 1),
+                      ),
+                    ),
+                    title: Text(review['reviewerName'].toString()),
+                    subtitle: Text(review['comment'].toString()),
+                    trailing: Text('${review['rating']}'),
+                  );
+                }).toList(),
+              ),
+              const Divider(height: 32),
+              Obx(
+                () => Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.remove_circle),
+                      color: Colors.teal,
+                      onPressed: _qty.value > 1 ? () => _qty.value-- : null,
+                    ),
+                    Text('${_qty.value}', style: const TextStyle(fontSize: 20)),
+                    IconButton(
+                      icon: const Icon(Icons.add_circle),
+                      color: Colors.teal,
+                      onPressed:
+                          _qty.value < product.stock ? () => _qty.value++ : null,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.shopping_cart),
+                  label: const Text('Tambah ke Cart'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  onPressed: product.stock < 1 ? null : () => _addToCart(product),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,51 +1,73 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../routes/app_routes.dart';
-import '../service/session_service.dart';
 
 class AuthController extends GetxController {
-  final RxnString username = RxnString();
+  final RxString _username = ''.obs;
 
-  AuthController(String? savedUsername) {
-    username.value = savedUsername;
+  String get username => _username.value;
+
+  @override
+  void onInit() {
+    _loadUsername();
+    super.onInit();
+  }
+
+  Future<void> _loadUsername() async {
+    final loginData = await SharedPreferences.getInstance();
+    _username.value = loginData.getString('username') ?? '';
+  }
+
+  Future<void> checkLogin() async {
+    final loginData = await SharedPreferences.getInstance();
+    final adaLogin = loginData.getBool('loginData') ?? false;
+    if (adaLogin) {
+      Get.offAllNamed(AppRoutes.main);
+    }
   }
 
   Future<void> login(String name, String password) async {
-    if (name.trim().isEmpty) {
-      _pesan('Username wajib diisi!', Colors.red);
+    if (name.isEmpty) {
+      _showMessage('Username wajib diisi!', Colors.red);
       return;
     }
-    if (password.trim().isEmpty) {
-      _pesan('Password wajib diisi!', Colors.red);
+    if (password.isEmpty) {
+      _showMessage('Password wajib diisi!', Colors.red);
       return;
     }
-    if (password.trim() != '124240186') {
-      _pesan('Password salah, gunakan NIM kamu!', Colors.red);
+    if (password != '124240186') {
+      _showMessage('Password salah, gunakan NIM kamu!', Colors.red);
       return;
     }
 
-    await SessionService.saveUsername(name.trim());
-    username.value = name.trim();
+    final loginData = await SharedPreferences.getInstance();
+    await loginData.setBool('loginData', true);
+    await loginData.setString('username', name);
+    _username.value = name;
+
     Get.offAllNamed(AppRoutes.main);
-    _pesan('Login Berhasil!', Colors.teal);
+    _showMessage('Login Berhasil!', Colors.teal);
   }
 
   Future<void> logout() async {
-    await SessionService.clear();
-    username.value = null;
+    final loginData = await SharedPreferences.getInstance();
+    await loginData.remove('loginData');
+    await loginData.remove('username');
+    _username.value = '';
+
     Get.offAllNamed(AppRoutes.login);
-    _pesan('Berhasil logout', Colors.teal);
+    _showMessage('Berhasil logout', Colors.teal);
   }
 
-  void _pesan(String text, Color color) {
+  void _showMessage(String message, Color color) {
     Get.snackbar(
       '',
-      text,
+      message,
       titleText: const SizedBox.shrink(),
       backgroundColor: color,
       colorText: Colors.white,
       snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
     );
   }
 }
