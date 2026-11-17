@@ -12,11 +12,11 @@ Aplikasi toko online sederhana (Flutter) untuk Latihan Responsi Praktikum Pemrog
 - Profile: username, kesan dan pesan, tombol Tes Notif (Local Notification), dan Logout.
 
 ## Library
-- get (GetX): state management, dependency injection, routing, dan binding (Modul VIII)
+- get (GetX): state management, dependency injection, routing, dan binding 
 - http: mengambil data produk dari API
-- hive dan hive_flutter: menyimpan cart dengan TypeAdapter (Modul VI)
-- shared_preferences: menyimpan session login (Modul VI)
-- flutter_local_notifications: notifikasi (Modul VII)
+- hive dan hive_flutter: menyimpan cart dengan TypeAdapter 
+- shared_preferences: menyimpan session login 
+- flutter_local_notifications: notifikasi 
 
 ## Struktur Folder
 ```
@@ -47,7 +47,7 @@ lib/
     └── widgets/
         └── product_card.dart        kartu produk
 assets/
-└── logo54.jpg                       logo toko
+└── logo54.jpg                       logo toko saya
 ```
 
 ## Cart per user
